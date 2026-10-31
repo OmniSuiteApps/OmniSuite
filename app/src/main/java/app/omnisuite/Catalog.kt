@@ -8,7 +8,8 @@ import org.json.JSONObject
 
 /**
  * Une appli installable : un dépôt de github.com/[GITHUB_OWNER] dont `app/build.gradle.kts` donne l'`applicationId`.
- * Ses releases y sont publiées ; [icon] est son `ic_launcher_foreground` (null : l'initiale à la place).
+ * Ses releases y sont publiées ; [icon] est son `ic_launcher_foreground` (null : l'initiale à la place), ou son
+ * `ic_launcher` complet si [fullIcon].
  */
 data class CatalogApp(
     val name: String,
@@ -16,6 +17,7 @@ data class CatalogApp(
     val repo: String,
     val description: String,
     val icon: ImageVector? = null,
+    val fullIcon: Boolean = false,
 ) {
     val latestUrl: String get() = "https://api.github.com/repos/$GITHUB_OWNER/$repo/releases/latest"
 }

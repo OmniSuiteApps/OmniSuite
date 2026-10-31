@@ -59,9 +59,9 @@ object Installer {
         repos.map { repo ->
             async {
                 val id = get(repo.rawUrl("app/build.gradle.kts"))?.let(Discovery::applicationId) ?: return@async null
-                val icon = (get(repo.rawUrl("app/src/main/res/drawable/ic_launcher_foreground.xml"))
-                    ?: get(repo.rawUrl("app/src/main/res/drawable/ic_launcher.xml")))?.let(RemoteIcon::parse)
-                CatalogApp(repo.name, id, repo.name, repo.description, icon)
+                val foreground = get(repo.rawUrl("app/src/main/res/drawable/ic_launcher_foreground.xml"))?.let(RemoteIcon::parse)
+                val full = if (foreground == null) get(repo.rawUrl("app/src/main/res/drawable/ic_launcher.xml"))?.let(RemoteIcon::parse) else null
+                CatalogApp(repo.name, id, repo.name, repo.description, foreground ?: full, fullIcon = full != null)
             }
         }.awaitAll().filterNotNull()
     }

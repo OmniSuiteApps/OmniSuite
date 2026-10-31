@@ -386,8 +386,9 @@ private fun OmniIcon(app: CatalogApp, size: Dp) {
     Image(
         rememberVectorPainter(app.icon),
         contentDescription = null,
-        // Une icône adaptative ne montre que les 72 dp du centre de ses 108 : même cadrage qu'à l'écran d'accueil
-        modifier = shape.graphicsLayer { scaleX = 1.5f; scaleY = 1.5f },
+        // Une icône adaptative ne montre que les 72 dp du centre de ses 108 : même cadrage qu'à l'écran d'accueil.
+        // Une icône complète est déjà cadrée.
+        modifier = if (app.fullIcon) shape else shape.graphicsLayer { scaleX = 1.5f; scaleY = 1.5f },
     )
 }
 
