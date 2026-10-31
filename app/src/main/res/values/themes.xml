@@ -1,0 +1,7 @@
+<resources>
+    <!-- Comme OmniLauncher : le fond d'écran du téléphone reste visible derrière un voile -->
+    <style name="Theme.OmniSuite" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowShowWallpaper">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+</resources>
