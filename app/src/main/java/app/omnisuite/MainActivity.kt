@@ -64,12 +64,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -134,23 +135,26 @@ private fun StoreScreen(resumes: Int) {
     val scope = rememberCoroutineScope()
     var page by rememberSaveable { mutableStateOf(Page.UPDATES) }
     var refreshes by remember { mutableIntStateOf(0) }
+    var catalog by remember { mutableStateOf<List<CatalogApp>?>(emptyList()) }
     var latest by remember { mutableStateOf<Map<String, Latest>>(emptyMap()) }
     val busy by Installer.busy.collectAsState()
     val installs by Installer.installs.collectAsState()
     // Relu à chaque retour dans l'appli et après chaque installation
-    val installed = remember(resumes, installs) { CATALOG.associate { it.packageName to Installer.installedVersion(context, it.packageName) } }
+    val installed = remember(resumes, installs, catalog) { catalog.orEmpty().associate { it.packageName to Installer.installedVersion(context, it.packageName) } }
     val canInstall = remember(resumes) { Installer.canInstall(context) }
 
     LaunchedEffect(refreshes) {
         latest = emptyMap()
-        latest = CATALOG.map { app -> async { app.packageName to Installer.latest(app) } }.awaitAll().toMap()
+        // Au premier chargement seulement : ensuite les fiches restent affichées pendant la vérification
+        if (catalog.isNullOrEmpty()) catalog = Installer.catalog()
+        latest = catalog.orEmpty().map { app -> async { app.packageName to Installer.latest(app) } }.awaitAll().toMap()
     }
     // Ouverte téléphone en veille, la première vérification échoue : on réessaie au retour dans l'appli
     LaunchedEffect(resumes) {
-        if (latest.values.any { it == Latest.Offline }) refreshes++
+        if (catalog == null || latest.values.any { it == Latest.Offline }) refreshes++
     }
 
-    val entries = CATALOG.map { Entry(it, installed[it.packageName], latest[it.packageName], it.packageName in busy) }
+    val entries = catalog.orEmpty().map { Entry(it, installed[it.packageName], latest[it.packageName], it.packageName in busy) }
     val updates = entries.filter { it.state == AppState.UPDATE }
 
     fun install(entry: Entry) {
@@ -196,9 +200,11 @@ private fun StoreScreen(resumes: Int) {
                     }) { Text(tr("Autoriser", "Allow")) }
                 }
             }
-            when (page) {
-                Page.UPDATES -> UpdatesPage(entries, updates, ::install, openStore = { page = Page.STORE })
-                Page.STORE -> StorePage(entries, ::install)
+            when {
+                catalog == null -> Message(tr("GitHub injoignable", "GitHub unreachable"), tr("Réessayer", "Retry")) { refreshes++ }
+                catalog!!.isEmpty() -> Message(tr("Recherche des applis…", "Looking for apps…"))
+                page == Page.UPDATES -> UpdatesPage(entries, updates, ::install, openStore = { page = Page.STORE })
+                else -> StorePage(entries, ::install)
             }
             Spacer(Modifier.height(16.dp))
         }
@@ -370,12 +376,19 @@ private fun statusText(entry: Entry): String = when (entry.state) {
 /** Icône Omni dessinée comme sur l'écran d'accueil : le glyphe blanc de l'appli sur le bleu commun. */
 @Composable
 private fun OmniIcon(app: CatalogApp, size: Dp) {
+    val shape = Modifier.size(size).clip(RoundedCornerShape(size * 0.3f)).background(OMNI_BLUE)
+    if (app.icon == null) {
+        Box(shape, contentAlignment = Alignment.Center) {
+            Text(app.name.removePrefix("Omni").take(1), color = Color.White, fontSize = (size.value * 0.45f).sp, fontWeight = FontWeight.SemiBold)
+        }
+        return
+    }
     Image(
-        painterResource(app.icon),
+        rememberVectorPainter(app.icon),
         contentDescription = null,
-        // Une icône adaptative ne montre que les 72 dp du centre de ses 108 : même cadrage qu'à l'écran d'accueil
-        modifier = Modifier.size(size).clip(RoundedCornerShape(size * 0.3f)).background(OMNI_BLUE)
-            .graphicsLayer { scaleX = 1.5f; scaleY = 1.5f },
+        // Une icône adaptative ne montre que les 72 dp du centre de ses 108 : même cadrage qu'à l'écran d'accueil.
+        // Une icône complète est déjà cadrée.
+        modifier = if (app.fullIcon) shape else shape.graphicsLayer { scaleX = 1.5f; scaleY = 1.5f },
     )
 }
 

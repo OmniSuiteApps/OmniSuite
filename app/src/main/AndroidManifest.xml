@@ -5,11 +5,16 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
-    <!-- Lire la version installée des applis du catalogue (Catalog.kt) -->
+    <!-- Lire la version installée des applis trouvées sur GitHub (Catalog.kt) : une icône d'accueil, ou l'écran d'accueil lui-même (OmniLauncher) -->
     <queries>
-        <package android:name="app.lanceur" />
-        <package android:name="app.clavier" />
-        <package android:name="app.diaporama" />
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.HOME" />
+        </intent>
     </queries>
 
     <application
