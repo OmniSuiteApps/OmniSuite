@@ -49,4 +49,18 @@ class UpdateCheckTest {
         assertEquals("https://api.github.com/repos/KrakenAgite/diaporama/releases/latest", CATALOG.first { it.name == "OmniBackground" }.latestUrl)
         assertTrue(CATALOG.any { it.packageName == "app.omnisuite" })
     }
+
+    @Test
+    fun the_store_offers_install_update_or_nothing() {
+        val withApk = Latest.Found(Release("1.7.0", "https://x/a.apk", "ab"))
+        assertEquals(AppState.CHECKING, appState("1.0", null))
+        assertEquals(AppState.MISSING, appState(null, Latest.Missing))
+        assertEquals(AppState.OFFLINE, appState("1.0", Latest.Offline))
+        assertEquals(AppState.INSTALL, appState(null, withApk))
+        assertEquals(AppState.UPDATE, appState("1.6.2", withApk))
+        assertEquals(AppState.UP_TO_DATE, appState("1.7.0", withApk))
+        // Version locale plus récente que la release : rien à proposer
+        assertEquals(AppState.UP_TO_DATE, appState("1.8", withApk))
+        assertEquals(AppState.NO_APK, appState("1.6.2", Latest.Found(Release("1.7.0"))))
+    }
 }
