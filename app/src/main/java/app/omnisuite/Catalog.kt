@@ -1,37 +1,48 @@
 package app.omnisuite
 
-import androidx.annotation.DrawableRes
+import androidx.compose.ui.graphics.vector.ImageVector
 import java.io.InputStream
 import java.security.MessageDigest
+import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Une appli installable : ses releases sont sur github.com/[GITHUB_OWNER]/[repo]. [icon] : le dessin blanc de son icône
- * (copie de son `ic_launcher_foreground`). Ajouter aussi son paquet aux `<queries>` du manifeste.
+ * Une appli installable : un dépôt de github.com/[GITHUB_OWNER] dont `app/build.gradle.kts` donne l'`applicationId`.
+ * Ses releases y sont publiées ; [icon] est son `ic_launcher_foreground` (null : l'initiale à la place).
  */
 data class CatalogApp(
     val name: String,
     val packageName: String,
     val repo: String,
-    @DrawableRes val icon: Int,
-    private val fr: String,
-    private val en: String,
+    val description: String,
+    val icon: ImageVector? = null,
 ) {
-    val description: String get() = tr(fr, en)
     val latestUrl: String get() = "https://api.github.com/repos/$GITHUB_OWNER/$repo/releases/latest"
 }
 
-/** Compte GitHub de toutes les applis Omni. */
+/** Compte GitHub de toutes les applis Omni : chacun de ses dépôts est une appli. */
 const val GITHUB_OWNER = "OmniSuiteApps"
 
-val CATALOG = listOf(
-    CatalogApp("OmniLauncher", "app.lanceur", "OmniLauncher", R.drawable.glyph_omnilauncher, "Écran d'accueil : favoris, alphabet, recherche", "Home screen: favorites, alphabet, search"),
-    CatalogApp("OmniKeyboard", "app.clavier", "OmniKeyboard", R.drawable.glyph_omnikeyboard, "Clavier personnalisable avec complétion", "Customizable keyboard with suggestions"),
-    CatalogApp("OmniBackground", "app.diaporama", "OmniBackground", R.drawable.glyph_omnibackground, "Fond d'écran animé avec tes photos", "Live wallpaper with your photos"),
-    CatalogApp("OmniPhone", "app.telephone", "OmniPhone", R.drawable.glyph_omniphone, "Appels, contacts et favoris", "Calls, contacts and favorites"),
-    // Elle-même : ses mises à jour apportent aussi les nouvelles applis du catalogue
-    CatalogApp("OmniSuite", "app.omnisuite", "OmniSuite", R.drawable.ic_launcher_foreground, "Installe et met à jour les applis Omni", "Installs and updates the Omni apps"),
-)
+/** Un dépôt de [GITHUB_OWNER], pas encore reconnu comme appli. */
+data class Repo(val name: String, val description: String, val branch: String) {
+    fun rawUrl(path: String) = "https://raw.githubusercontent.com/$GITHUB_OWNER/$name/$branch/$path"
+}
+
+/** Lecture des réponses de GitHub pour trouver les applis (pur). */
+object Discovery {
+    const val REPOS_URL = "https://api.github.com/users/$GITHUB_OWNER/repos?per_page=100"
+
+    /** Dépôts actifs, triés par nom ; les archives et les forks ne sont pas des applis. */
+    fun repos(json: String): List<Repo> {
+        val a = JSONArray(json)
+        return (0 until a.length()).map { a.getJSONObject(it) }
+            .filter { !it.optBoolean("archived") && !it.optBoolean("fork") }
+            .map { Repo(it.getString("name"), it.optString("description").takeUnless { d -> d == "null" }.orEmpty(), it.optString("default_branch", "main")) }
+            .sortedBy { it.name.lowercase() }
+    }
+
+    fun applicationId(gradle: String): String? = Regex("""applicationId\s*=\s*"([\w.]+)"""").find(gradle)?.groupValues?.get(1)
+}
 
 /** Ce que la boutique propose pour une appli, d'après sa version installée et sa dernière release. */
 enum class AppState { CHECKING, MISSING, OFFLINE, NO_APK, INSTALL, UPDATE, UP_TO_DATE }

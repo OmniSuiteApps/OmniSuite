@@ -44,10 +44,24 @@ class UpdateCheckTest {
     }
 
     @Test
-    fun every_catalog_app_has_its_own_package_and_repo() {
-        assertEquals(CATALOG.size, CATALOG.map { it.packageName }.toSet().size)
-        assertEquals("https://api.github.com/repos/OmniSuiteApps/OmniBackground/releases/latest", CATALOG.first { it.name == "OmniBackground" }.latestUrl)
-        assertTrue(CATALOG.any { it.packageName == "app.omnisuite" })
+    fun every_active_repo_is_a_candidate_app() {
+        val json = """[
+            {"name":"OmniPhone","description":"Appli Téléphone","default_branch":"main","archived":false,"fork":false},
+            {"name":"Vieux","description":null,"default_branch":"main","archived":true,"fork":false},
+            {"name":"Copie","description":"x","default_branch":"main","archived":false,"fork":true},
+            {"name":"OmniLauncher","description":null,"default_branch":"master","archived":false,"fork":false}
+        ]"""
+        val repos = Discovery.repos(json)
+        assertEquals(listOf("OmniLauncher", "OmniPhone"), repos.map { it.name })
+        assertEquals("", repos[0].description)
+        assertEquals("https://raw.githubusercontent.com/OmniSuiteApps/OmniLauncher/master/app/build.gradle.kts", repos[0].rawUrl("app/build.gradle.kts"))
+        assertEquals("https://api.github.com/repos/OmniSuiteApps/OmniPhone/releases/latest", CatalogApp("OmniPhone", "app.telephone", "OmniPhone", "").latestUrl)
+    }
+
+    @Test
+    fun the_package_comes_from_the_gradle_file() {
+        assertEquals("app.telephone", Discovery.applicationId("defaultConfig {\n        applicationId = \"app.telephone\"\n        minSdk = 35"))
+        assertEquals(null, Discovery.applicationId("plugins { id(\"com.android.library\") }"))
     }
 
     @Test

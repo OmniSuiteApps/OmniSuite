@@ -11,6 +11,8 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -47,6 +49,35 @@ object Installer {
 
     /** « Installer des applis inconnues » autorisé pour OmniSuite. */
     fun canInstall(context: Context): Boolean = context.packageManager.canRequestPackageInstalls()
+
+    /**
+     * Les applis de [GITHUB_OWNER] : chaque dépôt dont `app/build.gradle.kts` a un `applicationId`. null si GitHub est
+     * injoignable. (raw.githubusercontent.com ne compte pas dans la limite de 60 appels par heure de l'API.)
+     */
+    suspend fun catalog(): List<CatalogApp>? = withContext(Dispatchers.IO) {
+        val repos = get(Discovery.REPOS_URL)?.let(Discovery::repos) ?: return@withContext null
+        repos.map { repo ->
+            async {
+                val id = get(repo.rawUrl("app/build.gradle.kts"))?.let(Discovery::applicationId) ?: return@async null
+                val icon = (get(repo.rawUrl("app/src/main/res/drawable/ic_launcher_foreground.xml"))
+                    ?: get(repo.rawUrl("app/src/main/res/drawable/ic_launcher.xml")))?.let(RemoteIcon::parse)
+                CatalogApp(repo.name, id, repo.name, repo.description, icon)
+            }
+        }.awaitAll().filterNotNull()
+    }
+
+    /** Corps d'une réponse 200, null sinon. */
+    private fun get(url: String): String? = runCatching {
+        val conn = (URL(url).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 10_000; readTimeout = 10_000
+            setRequestProperty("Accept", "application/vnd.github+json")
+        }
+        try {
+            if (conn.responseCode == 200) conn.inputStream.bufferedReader().use { it.readText() } else null
+        } finally {
+            conn.disconnect()
+        }
+    }.onFailure { Log.w(TAG, "$url illisible", it) }.getOrNull()
 
     suspend fun latest(app: CatalogApp): Latest = withContext(Dispatchers.IO) {
         runCatching {

@@ -10,11 +10,14 @@ de l'appli, ses mises à jour passent sans question.
 
 ## Ajouter une appli
 
-OmniSuite est elle-même dans la liste : la mettre à jour (release sur `OmniSuiteApps/OmniSuite`) apporte les nouvelles applis.
+Rien à changer dans OmniSuite : chaque dépôt de `OmniSuiteApps` est une appli. Il suffit que le dépôt ait :
 
-1. Une ligne dans `CATALOG` (`Catalog.kt`)
-2. Son paquet dans `<queries>` (`AndroidManifest.xml`)
-3. Une release GitHub avec l'APK signé en pièce jointe
+1. `app/build.gradle.kts` avec son `applicationId`
+2. une activité d'accueil (MAIN/LAUNCHER), pour qu'OmniSuite lise sa version installée
+3. une release GitHub avec l'APK signé en pièce jointe
+
+La fiche prend le nom et la description du dépôt, et l'icône dans `app/src/main/res/drawable/ic_launcher_foreground.xml`
+(ou `ic_launcher.xml`). Sans icône lisible, l'initiale du nom la remplace.
 
 ## Compiler et installer
 
