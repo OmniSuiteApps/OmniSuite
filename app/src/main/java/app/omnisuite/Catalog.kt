@@ -25,9 +25,9 @@ data class CatalogApp(
 const val GITHUB_OWNER = "OmniSuiteApps"
 
 val CATALOG = listOf(
-    CatalogApp("OmniLauncher", "app.lanceur", "lanceur", R.drawable.glyph_omnilauncher, "Écran d'accueil : favoris, alphabet, recherche", "Home screen: favorites, alphabet, search"),
+    CatalogApp("OmniLauncher", "app.lanceur", "OmniLauncher", R.drawable.glyph_omnilauncher, "Écran d'accueil : favoris, alphabet, recherche", "Home screen: favorites, alphabet, search"),
     CatalogApp("OmniKeyboard", "app.clavier", "OmniKeyboard", R.drawable.glyph_omnikeyboard, "Clavier personnalisable avec complétion", "Customizable keyboard with suggestions"),
-    CatalogApp("OmniBackground", "app.diaporama", "diaporama", R.drawable.glyph_omnibackground, "Fond d'écran animé avec tes photos", "Live wallpaper with your photos"),
+    CatalogApp("OmniBackground", "app.diaporama", "OmniBackground", R.drawable.glyph_omnibackground, "Fond d'écran animé avec tes photos", "Live wallpaper with your photos"),
     // Elle-même : ses mises à jour apportent aussi les nouvelles applis du catalogue
     CatalogApp("OmniSuite", "app.omnisuite", "OmniSuite", R.drawable.ic_launcher_foreground, "Installe et met à jour les applis Omni", "Installs and updates the Omni apps"),
 )
