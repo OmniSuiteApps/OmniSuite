@@ -6,7 +6,7 @@ import java.security.MessageDigest
 import org.json.JSONObject
 
 /**
- * Une appli installable : ses releases sont sur github.com/KrakenAgite/[repo]. [icon] : le dessin blanc de son icône
+ * Une appli installable : ses releases sont sur github.com/[GITHUB_OWNER]/[repo]. [icon] : le dessin blanc de son icône
  * (copie de son `ic_launcher_foreground`). Ajouter aussi son paquet aux `<queries>` du manifeste.
  */
 data class CatalogApp(
@@ -18,8 +18,11 @@ data class CatalogApp(
     private val en: String,
 ) {
     val description: String get() = tr(fr, en)
-    val latestUrl: String get() = "https://api.github.com/repos/KrakenAgite/$repo/releases/latest"
+    val latestUrl: String get() = "https://api.github.com/repos/$GITHUB_OWNER/$repo/releases/latest"
 }
+
+/** Compte GitHub de toutes les applis Omni. */
+const val GITHUB_OWNER = "OmniSuiteApps"
 
 val CATALOG = listOf(
     CatalogApp("OmniLauncher", "app.lanceur", "lanceur", R.drawable.glyph_omnilauncher, "Écran d'accueil : favoris, alphabet, recherche", "Home screen: favorites, alphabet, search"),

@@ -46,7 +46,7 @@ class UpdateCheckTest {
     @Test
     fun every_catalog_app_has_its_own_package_and_repo() {
         assertEquals(CATALOG.size, CATALOG.map { it.packageName }.toSet().size)
-        assertEquals("https://api.github.com/repos/KrakenAgite/diaporama/releases/latest", CATALOG.first { it.name == "OmniBackground" }.latestUrl)
+        assertEquals("https://api.github.com/repos/OmniSuiteApps/diaporama/releases/latest", CATALOG.first { it.name == "OmniBackground" }.latestUrl)
         assertTrue(CATALOG.any { it.packageName == "app.omnisuite" })
     }
 

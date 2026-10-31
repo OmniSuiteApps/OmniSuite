@@ -275,7 +275,7 @@ private fun UpdatesPage(entries: List<Entry>, updates: List<Entry>, install: (En
 @Composable
 private fun StorePage(entries: List<Entry>, install: (Entry) -> Unit) {
     Text(
-        tr("Les applis Omni, depuis les releases GitHub de KrakenAgite", "Omni apps, from KrakenAgite's GitHub releases"),
+        tr("Les applis Omni, depuis les releases GitHub de $GITHUB_OWNER", "Omni apps, from $GITHUB_OWNER's GitHub releases"),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(bottom = 12.dp),
