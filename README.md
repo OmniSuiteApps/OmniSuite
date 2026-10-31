@@ -1,6 +1,6 @@
 # OmniSuite
 
-OmniSuite installe et met à jour OmniLauncher, OmniKeyboard et OmniBackground depuis leurs releases GitHub (`OmniSuiteApps/<appli>`), avec le
+OmniSuite installe et met à jour OmniLauncher, OmniKeyboard, OmniBackground et OmniPhone depuis leurs releases GitHub (`OmniSuiteApps/<appli>`), avec le
 même style que OmniLauncher (Material You, fond d'écran visible derrière un voile, cartes translucides).
 
 Pour chaque appli : version installée, dernière release, bouton *Installer* / *Mettre à jour* / *Ouvrir*.
