@@ -13,7 +13,7 @@ de l'appli, ses mises à jour passent sans question.
 Rien à changer dans OmniSuite : chaque dépôt de `OmniSuiteApps` est une appli. Il suffit que le dépôt ait :
 
 1. `app/build.gradle.kts` avec son `applicationId`
-2. une activité d'accueil (MAIN/LAUNCHER), pour qu'OmniSuite lise sa version installée
+2. une activité d'accueil (MAIN/LAUNCHER, ou MAIN/HOME pour un lanceur), pour qu'OmniSuite lise sa version installée
 3. une release GitHub avec l'APK signé en pièce jointe
 
 La fiche prend le nom et la description du dépôt, et l'icône dans `app/src/main/res/drawable/ic_launcher_foreground.xml`
